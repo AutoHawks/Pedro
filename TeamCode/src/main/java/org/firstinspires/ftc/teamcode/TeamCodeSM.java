@@ -32,10 +32,10 @@ public class TeamCodeSM extends LinearOpMode {
     private static final double LAUNCHER_MIN_VELOCITY = 1075;
 
     private static final double TIME_BETWEEN_SHOTS = 2.0;
-    private static final double FEEDER_TIME = 0.2;
+    private static final double FEEDER_TIME = 2;
     private static final double SPINUP_TIMEOUT = 5.0;
 
-    private static final int SHOTS_TO_FIRE = 3;
+    private static final int SHOTS_TO_FIRE = 4;
 
     private enum LaunchState {
         IDLE,
@@ -119,7 +119,7 @@ public class TeamCodeSM extends LinearOpMode {
                 // --------------------------------
 
                 double axial = -gamepad1.left_stick_y;
-                double lateral = -gamepad1.left_stick_x;
+                double lateral = gamepad1.left_stick_x;
                 double yaw = gamepad1.right_stick_x;
 
                 double frontLeftPower = axial + lateral + yaw;
@@ -162,7 +162,8 @@ public class TeamCodeSM extends LinearOpMode {
                     intakeServoL.setPower(1);
                     intakeServoR.setPower(-1);
 
-                } else {
+                }
+                if (gamepad1.b) {
 
                     stopIntake();
 
@@ -284,7 +285,7 @@ public class TeamCodeSM extends LinearOpMode {
 
             case LAUNCH:
 
-                shooterServo.setPower(1);
+                shooterServo.setPower(-1);
                 shooterServo2.setPower(1);
 
                 feederTimer.reset();
