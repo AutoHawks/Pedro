@@ -28,8 +28,8 @@ public class TeamCodeSM extends LinearOpMode {
     private ElapsedTime shotTimer;
     private ElapsedTime feederTimer;
 
-    private static final double LAUNCHER_TARGET_VELOCITY = 1125;
-    private static final double LAUNCHER_MIN_VELOCITY = 1075;
+    private static final double LAUNCHER_TARGET_VELOCITY = 900;
+    private static final double LAUNCHER_MIN_VELOCITY = 800;
 
     private static final double TIME_BETWEEN_SHOTS = 2.0;
     private static final double FEEDER_TIME = 2;
