@@ -18,6 +18,7 @@ public class TeamCodeSM extends LinearOpMode {
 
     private DcMotorEx shooter;
     private DcMotor intake;
+    private DcMotor shooterIntake;
 
     private CRServo intakeServoL;
     private CRServo intakeServoR;
@@ -61,6 +62,7 @@ public class TeamCodeSM extends LinearOpMode {
 
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
+        shooterIntake = hardwareMap.get(DcMotor.class, "shooterIntake");
 
         intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
         intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
@@ -95,6 +97,7 @@ public class TeamCodeSM extends LinearOpMode {
 
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooterIntake.setPower(0);
 
         shooter.setVelocityPIDFCoefficients(300, 0, 0, 10);
 
@@ -168,6 +171,11 @@ public class TeamCodeSM extends LinearOpMode {
                     stopIntake();
 
                 }
+                if (gamepad1.left_bumper) {
+                    shooterIntake.setPower(1);
+                } else if (gamepad2.left_bumper) {
+                    shooterIntake.setPower(0);
+                }
 
                 // --------------------------------
                 // SHOOTER CONTROLS
@@ -239,6 +247,7 @@ public class TeamCodeSM extends LinearOpMode {
 
             stopShooter();
             stopIntake();
+            shooterIntake.setPower(0);
 
             leftFront.setPower(0);
             leftRear.setPower(0);

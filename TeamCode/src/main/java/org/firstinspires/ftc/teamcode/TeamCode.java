@@ -17,6 +17,7 @@ public class TeamCode extends LinearOpMode {
     private DcMotor rightFront;
     private DcMotorEx shooter;
     private DcMotor intake;
+    private DcMotor shooterIntake;
     private CRServo intakeServoL;
     private CRServo intakeServoR;
 
@@ -56,6 +57,7 @@ public class TeamCode extends LinearOpMode {
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
+        shooterIntake = hardwareMap.get(DcMotor.class, "shooterIntake");
         intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
         intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
 
@@ -102,6 +104,11 @@ public class TeamCode extends LinearOpMode {
                     intakeServoL.setPower(0);
                     intakeServoR.setPower(0);
                 }
+                if (gamepad1.left_bumper) {
+                    shooterIntake.setPower(0.2);
+                } else if (gamepad1.leftTriggerWasPressed()) {
+                    shooterIntake.setPower(0);
+                }
                 telemetry.addData("Shooter Velocity", shooter.getVelocity());
                 // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
                 // Note: pushing stick forward gives negative value
@@ -135,6 +142,7 @@ public class TeamCode extends LinearOpMode {
                 telemetry.update();
             }
         }
+        shooterIntake.setPower(0);
     }
 
     /**
@@ -153,5 +161,6 @@ public class TeamCode extends LinearOpMode {
         shooter.setPower(0);
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setPower(0);
+        shooterIntake.setPower(0);
     }
 }
