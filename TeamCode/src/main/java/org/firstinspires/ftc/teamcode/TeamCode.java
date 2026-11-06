@@ -105,7 +105,7 @@ public class TeamCode extends LinearOpMode {
                     intakeServoR.setPower(0);
                 }
                 if (gamepad1.left_bumper) {
-                    shooterIntake.setPower(0.2);
+                    shooterIntake.setPower(0.5);
                 } else if (gamepad1.leftTriggerWasPressed()) {
                     shooterIntake.setPower(0);
                 }
