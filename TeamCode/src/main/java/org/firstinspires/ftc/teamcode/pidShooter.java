@@ -71,10 +71,10 @@ public class pidShooter extends LinearOpMode {
                     shooter.setVelocity(0);
                 }
 
-                if (gamepad1.right_trigger > 0.1) {
+                if (gamepad1.left_trigger > 0.1) {
                     blocker.setPosition(0);
                     blockerOpen = false;
-                } else if (gamepad1.rightBumperWasPressed()) {
+                } else if (gamepad1.leftBumperWasPressed()) {
                     blocker.setPosition(0.5);
                     blockerOpen = true;
                 }
@@ -89,9 +89,9 @@ public class pidShooter extends LinearOpMode {
                     intakeServoR.setPower(0);
                 }
 
-                if (gamepad1.left_bumper) {
+                if (gamepad1.right_bumper) {
                     shooterIntake.setPower(0.5);
-                } else if (gamepad1.leftTriggerWasPressed()) {
+                } else if (gamepad1.rightTriggerWasPressed()) {
                     shooterIntake.setPower(0);
                 }
 

@@ -71,10 +71,10 @@ public class pidShooter2p extends LinearOpMode {
                     shooter.setVelocity(0);
                 }
 
-                if (gamepad2.right_trigger > 0.1) {
+                if (gamepad2.left_trigger > 0.1) {
                     blocker.setPosition(0);
                     blockerOpen = false;
-                } else if (gamepad2.rightBumperWasPressed()) {
+                } else if (gamepad2.leftBumperWasPressed()) {
                     blocker.setPosition(0.5);
                     blockerOpen = true;
                 }
@@ -89,13 +89,17 @@ public class pidShooter2p extends LinearOpMode {
                     intakeServoR.setPower(0);
                 }
 
-                if (gamepad2.left_bumper) {
+                if (gamepad2.right_bumper) {
                     shooterIntake.setPower(0.5);
-                } else if (gamepad2.leftTriggerWasPressed()) {
+                } else if (gamepad2.rightTriggerWasPressed()) {
                     shooterIntake.setPower(0);
                 }
 
                 telemetry.addData("Shooter Velocity", shooter.getVelocity());
+                telemetry.addData(
+                        "Shooter Motor",
+                        Math.abs(shooter.getVelocity()) > 50 ? "ON" : "OFF"
+                );
                 telemetry.addData("Blocker", blockerOpen ? "open" : "closed");
 
                 axial = -gamepad1.left_stick_y;
