@@ -15,11 +15,29 @@ public class TeamCode extends LinearOpMode {
     private DcMotor leftFront;
     private DcMotor rightRear;
     private DcMotor rightFront;
-    private DcMotorEx shooter;
+    private DcMotor shooter;
     private DcMotor intake;
-    private DcMotor shooterIntake;
     private CRServo intakeServoL;
     private CRServo intakeServoR;
+    private CRServo shooterServo;
+    private CRServo shooterServo2;
+
+    ElapsedTime launchTime;
+    String LAUNCH_BALLS;
+    String IDLE;
+    int LAUNCHER_TARGET_VELOCITY;
+    String WAIT_FOR_LAUNCH;
+    String SPIN_UP;
+    int LAUNCHER_MIN_VELOCITY;
+    String DRIVING_AWAY_FROM_GOAL;
+    String LAUNCH;
+    String launchState;
+    String LAUNCHING;
+    int TIME_BETWEEN_SHOTS;
+    ElapsedTime shotTimer;
+    ElapsedTime FeederTimer;
+    String autoStateMachine;
+    int ShotsToFire;
 
     /**
      * This OpMode illustrates driving a 4-motor Omni-Directional (or Holonomic) robot.
@@ -55,13 +73,17 @@ public class TeamCode extends LinearOpMode {
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightRear = hardwareMap.get(DcMotor.class, "rightRear");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooter = hardwareMap.get(DcMotor.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
-        shooterIntake = hardwareMap.get(DcMotor.class, "shooterIntake");
         intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
         intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
+        shooterServo = hardwareMap.get(CRServo.class, "shooterServo");
+        shooterServo2 = hardwareMap.get(CRServo.class, "shooterServo2");
 
-        initMotors();
+        createAutoStateMachine();
+        createLaunchStateMachine();
+        createVariables();
+        intiMotors();
         runtime = new ElapsedTime();
         // ########################################################################################
         // !!! IMPORTANT Drive Information. Test your motor directions. !!!!!
@@ -90,10 +112,19 @@ public class TeamCode extends LinearOpMode {
         // Run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                if (gamepad1.xWasPressed()) {
-                    shooter.setVelocity(1100);
-                } else if (gamepad1.aWasPressed()) {
-                    shooter.setPower(0);
+                if (autoStateMachine.equals(LAUNCH_BALLS)) {
+                    launch(true);
+                    autoStateMachine = WAIT_FOR_LAUNCH;
+                } else if (autoStateMachine.equals(WAIT_FOR_LAUNCH)) {
+                    if (launch(false)) {
+                        ShotsToFire += -1;
+                        if (ShotsToFire > 0) {
+                            autoStateMachine = LAUNCH_BALLS;
+                        } else {
+                            ((DcMotorEx) shooter).setVelocity(0);
+                            autoStateMachine = DRIVING_AWAY_FROM_GOAL;
+                        }
+                    }
                 }
                 if (gamepad1.y) {
                     intake.setPower(-1);
@@ -103,13 +134,18 @@ public class TeamCode extends LinearOpMode {
                     intake.setPower(0);
                     intakeServoL.setPower(0);
                     intakeServoR.setPower(0);
+                } else if (gamepad1.x) {
+                    ((DcMotorEx) shooter).setVelocity(1300);
+                    shooterServo.setPower(-1);
+                    shooterServo2.setPower(1);
+                } else if (gamepad1.a) {
+                    ((DcMotorEx) shooter).setVelocity(0);
+                    shooterServo.setPower(0);
+                    shooterServo2.setPower(0);
                 }
-                if (gamepad1.left_bumper) {
-                    shooterIntake.setPower(0.5);
-                } else if (gamepad1.leftTriggerWasPressed()) {
-                    shooterIntake.setPower(0);
-                }
-                telemetry.addData("Shooter Velocity", shooter.getVelocity());
+                telemetry.addData("Launch State", launchState);
+                telemetry.addData("Launcher Motor Velocity", ((DcMotorEx) shooter).getVelocity());
+                telemetry.addData("Launch time", launchTime);
                 // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
                 // Note: pushing stick forward gives negative value
                 axial = -gamepad1.left_stick_y;
@@ -142,13 +178,12 @@ public class TeamCode extends LinearOpMode {
                 telemetry.update();
             }
         }
-        shooterIntake.setPower(0);
     }
 
     /**
      * Describe this function...
      */
-    private void initMotors() {
+    private void intiMotors() {
         shooter.setDirection(DcMotor.Direction.FORWARD);
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
@@ -157,10 +192,115 @@ public class TeamCode extends LinearOpMode {
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooter.setPower(0);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setPower(0);
-        shooterIntake.setPower(0);
+        ((DcMotorEx) shooter).setVelocityPIDFCoefficients(300, 0, 0, 10);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void createVariables() {
+        double DRIVE_SPEED;
+        double ROTATE_SPEED;
+        int WHEEL_DIAMETER_MM;
+        double ENCODER_TICKS_PER_REV;
+        double TICKS_PER_INCH;
+        double TRACK_WIDTH_INCHES;
+        int robotRotateAngle;
+        double DRIVE_TOLERANCE;
+        int holdSeconds;
+        ElapsedTime driveTimer;
+
+        launchTime = new ElapsedTime();
+        LAUNCHER_TARGET_VELOCITY = 1125;
+        LAUNCHER_MIN_VELOCITY = 1075;
+        TIME_BETWEEN_SHOTS = 2;
+        DRIVE_SPEED = 0.5;
+        ROTATE_SPEED = 0.2;
+        WHEEL_DIAMETER_MM = 96;
+        ENCODER_TICKS_PER_REV = 537.7;
+        TICKS_PER_INCH = ENCODER_TICKS_PER_REV / ((WHEEL_DIAMETER_MM * Math.PI) / 25.4);
+        TRACK_WIDTH_INCHES = 15.9;
+        ShotsToFire = 3;
+        robotRotateAngle = 45;
+        DRIVE_TOLERANCE = 0.5;
+        holdSeconds = 1;
+        shotTimer = new ElapsedTime();
+        FeederTimer = new ElapsedTime();
+        driveTimer = new ElapsedTime();
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void createAutoStateMachine() {
+        String ROTATING;
+        String DRIVING_OFF_LINE;
+        String COMPLETE;
+
+        LAUNCH_BALLS = "LAUNCH_BALLS";
+        WAIT_FOR_LAUNCH = "WAIT_FOR_LAUNCH";
+        DRIVING_AWAY_FROM_GOAL = "DRIVING_AWAY_FROM_GOAL";
+        ROTATING = "ROTATING";
+        DRIVING_OFF_LINE = "DRIVING_OFF_LINE";
+        COMPLETE = "COMPLETE";
+        autoStateMachine = LAUNCH_BALLS;
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void createLaunchStateMachine() {
+        IDLE = "IDLE";
+        SPIN_UP = "SPIN_UP";
+        LAUNCH = "LAUNCH";
+        LAUNCHING = "LAUNCHING";
+        launchState = IDLE;
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void arcadeDrive(double forward, double rotate) {
+        leftFront.setPower(forward + rotate);
+        leftRear.setPower(forward + rotate);
+        rightFront.setPower(forward + rotate);
+        rightRear.setPower(forward + rotate);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private boolean launch(boolean shotRequested) {
+        if (launchState.equals(IDLE)) {
+            if (shotRequested == true) {
+                launchState = SPIN_UP;
+                shotTimer.reset();
+            }
+        } else if (launchState.equals(SPIN_UP)) {
+            ((DcMotorEx) shooter).setVelocity(LAUNCHER_TARGET_VELOCITY);
+            if (((DcMotorEx) shooter).getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                launchState = LAUNCH;
+            }
+        } else if (launchState.equals(LAUNCH)) {
+            shooterServo.setPower(1);
+            shooterServo2.setPower(1);
+            FeederTimer.reset();
+            launchState = LAUNCHING;
+        } else if (launchState.equals(LAUNCHING)) {
+            if (FeederTimer.seconds() > 0.2) {
+                shooterServo.setPower(0);
+                shooterServo.setPower(0);
+                if (shotTimer.seconds() > TIME_BETWEEN_SHOTS) {
+                    launchState = IDLE;
+                    if (true) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
