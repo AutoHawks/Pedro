@@ -54,7 +54,7 @@ public class highSideRightRed extends LinearOpMode {
     private final Pose point2Start = poseFactory.of(57.75, 21.75, 0);
     private final Pose point2 = poseFactory.of(32.75, 21.75, 0);
     private final Pose point3Start = poseFactory.of(32.75, 21.75, 0);
-    private final Pose point3 = poseFactory.of(10.75, 114.75, 0);
+    private final Pose point3 = poseFactory.of(15.75, 94.75, 0);
 
     // Builds the full autonomous routine by chaining several path-following commands in order.
     private Command autoRoutine() {

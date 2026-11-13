@@ -147,7 +147,7 @@ public class lowSideRightBlue extends LinearOpMode {
     }
 
     public Path path1() {
-        return Paths.line(start, path1).linear(start, path1);
+        return Paths.line(start, path1).tangent();
     }
 
     public Path path2() {
