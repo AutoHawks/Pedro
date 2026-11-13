@@ -41,9 +41,9 @@ public class lowSideLeftRed extends LinearOpMode {
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(60.4861, 132.3032, 90);
-    private final Pose path1 = poseFactory.of(60.86, 113.3857, 90);
-    private final Pose point2 = poseFactory.of(9.1961, 114.3806, -1.1032);
+    private final Pose start = poseFactory.of(59.2, 131.6, 90);
+    private final Pose path1 = poseFactory.of(36.7, 116.2, 0);
+    private final Pose point2 = poseFactory.of(6, 118.2, 0);
 
     // Autonomous routine
     public Command autoRoutine() {

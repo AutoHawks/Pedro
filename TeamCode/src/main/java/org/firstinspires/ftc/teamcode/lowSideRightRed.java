@@ -41,9 +41,9 @@ public class lowSideRightRed extends LinearOpMode {
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(61.9815, 128.9386, 90);
-    private final Pose path1 = poseFactory.of(57.1215, 111.1427, 180);
-    private final Pose point2 = poseFactory.of(57, 95.7212, 10);
+    private final Pose start = poseFactory.of(59.1737, 131.5864, 90);
+    private final Pose point1 = poseFactory.of(46.7108, 107.173, 90);
+    private final Pose point2 = poseFactory.of(10.8684, 96.7187, 0);
 
     // Autonomous routine
     public Command autoRoutine() {
@@ -147,10 +147,10 @@ public class lowSideRightRed extends LinearOpMode {
     }
 
     public Path path1() {
-        return Paths.line(start, path1).tangent();
+        return Paths.line(start, point1).constant(point1);
     }
 
     public Path path2() {
-        return Paths.line(path1, point2).reverseTangent();
+        return Paths.line(point1, point2).constant(point2);
     }
 }
