@@ -151,5 +151,6 @@ public class pidShooter extends LinearOpMode {
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setPower(0);
         shooterIntake.setPower(0);
+        shooterIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }
